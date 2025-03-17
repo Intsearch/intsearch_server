@@ -4,11 +4,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-import app.processor.ai, app.processor.search
+from app.processor import ai, search
 from app.config import codes, config
 from app.model import model
 
-# uvicorn app.main:app --host 0.0.0.0 --port 4000
+# uvicorn app.main:fast_app --host 0.0.0.0 --port 4000
 fast_app = FastAPI()
 
 fast_app.add_middleware(
@@ -26,7 +26,7 @@ async def async_yield(action: str, data: dict = None):
 
 
 async def process_search(data: model.Request, intent: model.IntentAnalysis):
-    search_result = app.processor.search.search_google(data, intent.kw)
+    search_result = search.search_google(data, intent.kw)
 
     if search_result is None:
         yield model.response(data={'action': 'search_error'}), False
@@ -37,7 +37,7 @@ async def process_search(data: model.Request, intent: model.IntentAnalysis):
 
 
 async def process_ai(data: model.Request, intent: model.IntentAnalysis):
-    stream = app.processor.ai.answer(data, intent.thinking)
+    stream = ai.answer(data, intent.thinking)
     if stream is None:
         yield model.response(data={'action': 'ai_error'}), False
         await asyncio.sleep(0)
@@ -106,7 +106,7 @@ async def process(data: model.Request):
     yield model.response(data={'action': 'intent_analysis'})
     await asyncio.sleep(0)
 
-    intent = app.processor.ai.intent_analysis(data)
+    intent = ai.intent_analysis(data)
     yield model.response(data={'action': 'intent_analysis_result', 'data': intent.model_dump()})
     await asyncio.sleep(0)
 
@@ -154,7 +154,7 @@ async def process(data: model.Request):
 
 
 @fast_app.post("/search")
-async def search(request: model.Request):
+async def do_search(request: model.Request):
     if len(str.strip(request.q)) <= 0:
         return model.streaming_response(code=codes.param_error)
 
