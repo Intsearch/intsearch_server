@@ -23,7 +23,7 @@ jobs:
         uses: docker/metadata-action@v2  # 抽取项目信息，主要是镜像的tag
         with:
           images: feassh/intsearch
-z
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4 # docker build & push
         with:
