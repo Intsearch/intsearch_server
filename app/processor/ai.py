@@ -2,8 +2,8 @@ import json
 
 from openai import OpenAI
 
-from config import config
-from model import model
+from app.config import config
+from app.model import model
 
 
 def intent_analysis(data: model.Request):

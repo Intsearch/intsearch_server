@@ -3,7 +3,7 @@ import json
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from config import codes
+from app.config import codes
 
 
 class RequestSearch(BaseModel):

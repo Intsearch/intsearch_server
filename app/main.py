@@ -4,14 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-import processor.ai, processor.search
-from config import codes, config
-from model import model
+import app.processor.ai, app.processor.search
+from app.config import codes, config
+from app.model import model
 
-# uvicorn main:app --host 0.0.0.0 --port 4000
-app = FastAPI()
+# uvicorn app.main:app --host 0.0.0.0 --port 4000
+fast_app = FastAPI()
 
-app.add_middleware(
+fast_app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
@@ -26,7 +26,7 @@ async def async_yield(action: str, data: dict = None):
 
 
 async def process_search(data: model.Request, intent: model.IntentAnalysis):
-    search_result = processor.search.search_google(data, intent.kw)
+    search_result = app.processor.search.search_google(data, intent.kw)
 
     if search_result is None:
         yield model.response(data={'action': 'search_error'}), False
@@ -37,7 +37,7 @@ async def process_search(data: model.Request, intent: model.IntentAnalysis):
 
 
 async def process_ai(data: model.Request, intent: model.IntentAnalysis):
-    stream = processor.ai.answer(data, intent.thinking)
+    stream = app.processor.ai.answer(data, intent.thinking)
     if stream is None:
         yield model.response(data={'action': 'ai_error'}), False
         await asyncio.sleep(0)
@@ -106,7 +106,7 @@ async def process(data: model.Request):
     yield model.response(data={'action': 'intent_analysis'})
     await asyncio.sleep(0)
 
-    intent = processor.ai.intent_analysis(data)
+    intent = app.processor.ai.intent_analysis(data)
     yield model.response(data={'action': 'intent_analysis_result', 'data': intent.model_dump()})
     await asyncio.sleep(0)
 
@@ -153,7 +153,7 @@ async def process(data: model.Request):
                 yield response
 
 
-@app.post("/search")
+@fast_app.post("/search")
 async def search(request: model.Request):
     if len(str.strip(request.q)) <= 0:
         return model.streaming_response(code=codes.param_error)
@@ -161,6 +161,6 @@ async def search(request: model.Request):
     return StreamingResponse(process(request), media_type="text/event-stream")
 
 
-@app.post("/config")
+@fast_app.post("/config")
 def get_config():
     return model.Response(data=config.ai)
