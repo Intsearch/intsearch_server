@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM --platform=$TARGETPLATFORM python:3.9-slim
 
 WORKDIR /code
 

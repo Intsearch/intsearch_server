@@ -5,17 +5,26 @@ on:
     types: [ created ] # 表示在创建新的 Release 时触发
 
 jobs:
-  context:
+  build-and-push:
     runs-on: ubuntu-latest  # job运行的基础环境
 
-    steps: # 一个job由一个或多个step组成
-      - name: Check out the repo
-        uses: actions/checkout@v3   # 官方的action，获取代码
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2  # 三方的action操作， 执行docker login
+      # 设置 QEMU 以支持 ARM 模拟
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 启用 Buildx（支持多架构构建）
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 登录 Docker Hub（如果需要推送）
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USER_NAME }}  # 配置dockerhub的认证，在Github项目主页 【Settings】 -> 【Secrets】 添加对应变量
+          username: ${{ secrets.DOCKER_USER_NAME }}
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
@@ -24,10 +33,12 @@ jobs:
         with:
           images: feassh/intsearch
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4 # docker build & push
+      # 构建 ARM 版本的 Docker 镜像并推送
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
         with:
-          context: .    #指定dockerfile文件的位置
+          context: .
           push: true
+          platforms: linux/arm64,linux/amd64  # 这里指定多架构支持
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
