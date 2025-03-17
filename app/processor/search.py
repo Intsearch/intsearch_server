@@ -5,7 +5,9 @@ from app.model import model
 
 
 def search_google(data: model.Request, kw: str):
-    url = f'{config.search['cse']['url']}?key={data.search.key}&cx={data.search.cx}&q={kw if kw is not None and len(kw) > 0 else data.q}'
+    cse_url = config.search['cse']['url']
+    query = kw if kw is not None and len(kw) > 0 else data.q
+    url = f'{cse_url}?key={data.search.key}&cx={data.search.cx}&q={query}'
 
     try:
         res = requests.get(url=url)
