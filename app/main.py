@@ -62,7 +62,7 @@ async def process_ai(data: model.Request, intent: model.IntentAnalysis):
                     'content': content
                 }})
             elif data.ai.thinking.provider == 'groq':
-                if content is None or len(content) == 0:  # or content == '\n\n'
+                if content is None or len(content) == 0:
                     continue
 
                 if thinking_finished == False and content == '\n<think>\n':
