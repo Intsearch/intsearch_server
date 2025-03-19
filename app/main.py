@@ -3,13 +3,21 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from contextlib import asynccontextmanager
 
 from app.processor import ai, search
 from app.config import codes, config
 from app.model import model
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await config.init_and_check()
+    yield
+
+
 # uvicorn app.main:fast_app --host 0.0.0.0 --port 4000
-fast_app = FastAPI()
+fast_app = FastAPI(lifespan=lifespan)
 
 fast_app.add_middleware(
     CORSMiddleware,
@@ -26,7 +34,10 @@ async def async_yield(action: str, data: dict = None):
 
 
 async def process_search(data: model.Request, intent: model.IntentAnalysis):
-    search_result = search.search_google(data, intent.kw)
+    if len(data.search.key) <= 0 or len(data.search.cx) <= 0:
+        search_result = search.search_google_js(data, intent.kw)
+    else:
+        search_result = search.search_google(data, intent.kw)
 
     if search_result is None:
         yield model.response(data={'action': 'search_error'}), False

@@ -30,7 +30,6 @@ def intent_analysis(data: model.Request):
         result = model.IntentAnalysis(type=res['type'], thinking=res['thinking'], kw=res['kw'])
     except Exception as e:
         result = model.IntentAnalysis()
-        print(e)
 
     return result
 
@@ -57,5 +56,4 @@ def answer(data: model.Request, thinking: bool):
 
         return stream
     except Exception as e:
-        print(e)
         return None

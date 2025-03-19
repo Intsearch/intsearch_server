@@ -6,4 +6,6 @@ services:
     image: feassh/intsearch:latest
     ports:
       - "4000:4000"
+    environment:
+      - SEARCH_CSE_JS_CX=
     restart: "always"
