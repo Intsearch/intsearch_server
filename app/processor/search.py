@@ -37,12 +37,12 @@ def search_google_js(data: model.Request, kw: str):
             'start': 0,
             'num': 10,
             'hl': 'zh-CN',
+            'lr': 'zh-Hans',
+            # 'cr': 'countryCN',  # 区域受限的搜索结果: 仅显示所选区域中的搜索结果
+            'gl': 'cn',  # 区域
             'source': 'gcsc',
             'cselibv': '75c56d121cde450a',
             'safe': 'off',
-            'lr': '',
-            'cr': '',
-            'gl': 'cn',
             'filter': 0,
             'sort': '',
             'as_oq': '',
