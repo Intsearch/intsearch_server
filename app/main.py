@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from contextlib import asynccontextmanager
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from app.processor import ai, search
 from app.config import codes, config
@@ -13,6 +15,12 @@ from app.model import model
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await config.init_and_check()
+
+    scheduler = BackgroundScheduler()
+    # 每 24小时 执行一次
+    scheduler.add_job(config.get_search_cse_tok, CronTrigger(hour=0, minute=0))
+    scheduler.start()
+
     yield
 
 
